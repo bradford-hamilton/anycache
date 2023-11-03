@@ -20,8 +20,3 @@ func main() {
 
 	fmt.Println(ac.Keys())
 }
-
-type neatStructure struct {
-	Name string
-	Age  int
-}
