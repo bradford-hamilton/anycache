@@ -44,5 +44,21 @@ func main() {
 	fmt.Println(ok)
 	fmt.Println(item)
 
-	// ac.Set(incmpUser{name: "bradford", age: 34}, "panic")
+	// ac.Set(incmpUser{name: "bradford", age: 34}, "panic") // this panics as the keys aren't comparable
+
+	m1 := make(map[cmpUser]int)
+	// m2 := make(map[incmpUser]int) // doesn't compile - invalid map key type incmpUser compiler(IncomparableMapKey)
+
+	// IncomparableMapKey occurs when a map key type does not support the == and
+	// != operators.
+	//
+	// Per the spec:
+	//  "The comparison operators == and != must be fully defined for operands of
+	//  the key type; thus the key type must not be a function, map, or slice."
+	//
+	// Example:
+	//  var x map[T]int
+	//
+	//  type T []int
+	fmt.Println(m1, incmpUser{name: "", age: 0})
 }
