@@ -16,7 +16,7 @@ const maxCacheSize = 5 * 100 * 1024 * 1024 // 500MB
 // AnyCache is a thread safe implementation of a simple generic cache.
 type AnyCache struct {
 	items map[any]any
-	mu    *sync.Mutex
+	mu    *sync.RWMutex
 }
 
 // Item represents a "record" in the cache.
@@ -27,7 +27,7 @@ type Item struct {
 
 // New returns an AnyCache with the given capacity.
 func New(capacity int) (*AnyCache, error) {
-	if capacity >= maxCacheSize {
+	if capacity > maxCacheSize {
 		return nil, ErrMaxCacheSize
 	}
 	if capacity < 1 {
@@ -35,7 +35,7 @@ func New(capacity int) (*AnyCache, error) {
 	}
 	ac := AnyCache{
 		items: make(map[any]any, capacity),
-		mu:    &sync.Mutex{},
+		mu:    &sync.RWMutex{},
 	}
 	return &ac, nil
 }
@@ -60,8 +60,8 @@ func (ac *AnyCache) Set(key any, value any) (Item, bool) {
 // Get gets an Item by its key and returns both the Item
 // as well as whether the call was a cache "hit".
 func (ac AnyCache) Get(key any) (Item, bool) {
-	ac.mu.Lock()
-	defer ac.mu.Unlock()
+	ac.mu.RLock()
+	defer ac.mu.RUnlock()
 
 	item, ok := ac.items[key]
 	if !ok {
@@ -72,8 +72,8 @@ func (ac AnyCache) Get(key any) (Item, bool) {
 }
 
 func (ac AnyCache) Keys() []any {
-	ac.mu.Lock()
-	defer ac.mu.Unlock()
+	ac.mu.RLock()
+	defer ac.mu.RUnlock()
 
 	ret := make([]any, 0, len(ac.items))
 	for k := range ac.items {
@@ -92,7 +92,7 @@ func (ac *AnyCache) Flush() {
 
 // Len retieves the total count of items in the cache.
 func (ac AnyCache) Len() int {
-	ac.mu.Lock()
-	defer ac.mu.Unlock()
+	ac.mu.RLock()
+	defer ac.mu.RUnlock()
 	return len(ac.items)
 }
